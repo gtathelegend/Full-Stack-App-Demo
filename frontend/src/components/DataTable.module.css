@@ -1,108 +1,167 @@
-.container {
-  background-color: white;
+.tableContainer {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  margin-bottom: var(--space-lg);
   overflow: hidden;
 }
 
-.title {
-  padding: var(--space-lg);
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+.tableTitle {
+  padding: 14px 16px;
   border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-bg);
+}
+
+.tableTitle h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .tableWrapper {
   overflow-x: auto;
-  max-height: 400px;
-  overflow-y: auto;
 }
 
-table {
+.table {
   width: 100%;
   border-collapse: collapse;
-}
-
-thead {
-  background-color: var(--color-bg);
-  position: sticky;
-  top: 0;
-}
-
-th {
-  padding: var(--space-md) var(--space-lg);
-  text-align: left;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-border);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-td {
-  padding: var(--space-md) var(--space-lg);
-  border-bottom: 1px solid var(--color-border);
-  color: var(--color-text-primary);
   font-size: 13px;
 }
 
-tbody tr:hover {
+.table th {
+  padding: 11px 14px;
+  text-align: left;
+  font-weight: 500;
+  color: var(--color-text-secondary);
   background-color: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
 }
 
-tbody tr:last-child td {
+.table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  color: var(--color-text-primary);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.deleteBtn {
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 4px 8px;
+.table tbody tr:hover {
+  background-color: #fafafa;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.actionBtn {
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
   border-radius: var(--radius-sm);
-  transition: all 0.2s;
-  display: inline-block;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.deleteBtn {
+  background-color: transparent;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
 }
 
 .deleteBtn:hover {
-  background-color: rgba(239, 68, 68, 0.1);
-  transform: scale(1.2);
+  background-color: var(--color-danger-bg);
 }
 
-.deleteBtn:active {
-  transform: scale(0.95);
+.emptyState {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: 13px;
 }
 
-@media (max-width: 768px) {
-  .container {
-    border-radius: var(--radius-md);
-  }
+/* Badge styles for different types */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+}
 
-  .title {
-    padding: var(--space-md);
-    font-size: 16px;
-  }
+/* Lead status badges */
+.badgeNew {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
 
-  table {
-    font-size: 12px;
-  }
+.badgeContacted {
+  background-color: #fef3c7;
+  color: #b45309;
+}
 
-  th {
-    padding: var(--space-sm) var(--space-md);
-    font-size: 11px;
-  }
+.badgeQualified {
+  background-color: #d1fae5;
+  color: #047857;
+}
 
-  td {
-    padding: var(--space-sm) var(--space-md);
-    font-size: 12px;
-  }
+.badgeLost {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
 
-  .tableWrapper {
-    max-height: 500px;
-  }
+/* Task status badges */
+.badgePending {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.badgeInProgress {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badgeCompleted {
+  background-color: #d1fae5;
+  color: #047857;
+}
+
+/* Priority badges */
+.badgeLow {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.badgeMedium {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.badgeHigh {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* Role badges */
+.badgeAdmin {
+  background-color: #ede9fe;
+  color: #6d28d9;
+}
+
+.badgeManager {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badgeUser {
+  background-color: #f3f4f6;
+  color: #6b7280;
 }

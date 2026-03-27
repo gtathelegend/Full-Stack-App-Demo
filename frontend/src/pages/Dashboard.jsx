@@ -50,13 +50,11 @@ export const Dashboard = () => {
       if (usersRes.status === 'fulfilled') {
         setUsers(usersRes.value.data.data)
       } else if (usersRes.status === 'rejected' && usersRes.reason.response?.status === 403) {
-        // User doesn't have permission to view users list (non-admin/manager)
         setUsers([])
       } else if (usersRes.status === 'rejected') {
         console.warn('Failed to fetch users:', usersRes.reason)
       }
 
-      // Check if any critical requests failed
       if (statsRes.status === 'rejected' || leadsRes.status === 'rejected' || tasksRes.status === 'rejected') {
         const failedRequest = [statsRes, leadsRes, tasksRes].find(r => r.status === 'rejected')
         const errorMsg = failedRequest.reason.response?.data?.message || 'Failed to fetch data'
@@ -172,7 +170,7 @@ export const Dashboard = () => {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <div className={styles.loadingContainer}>
         <div className="spinner"></div>
       </div>
     )
@@ -185,15 +183,11 @@ export const Dashboard = () => {
         <div className={styles.main}>
           <Navbar title="Dashboard" />
           <div className={styles.content}>
-            <div style={{ textAlign: 'center', padding: '3rem' }}>
-              <h2>Error Loading Data</h2>
-              <p style={{ color: '#666', marginBottom: '1.5rem' }}>{loadError}</p>
-              <button
-                className={styles.submitBtn}
-                onClick={fetchData}
-                style={{ cursor: 'pointer' }}
-              >
-                Retry
+            <div className={styles.errorContainer}>
+              <h2>Unable to load dashboard</h2>
+              <p>{loadError}</p>
+              <button className={styles.retryBtn} onClick={fetchData}>
+                Try again
               </button>
             </div>
           </div>
@@ -232,15 +226,14 @@ export const Dashboard = () => {
         <Navbar title="Dashboard" />
         <div className={styles.content}>
           <div className={styles.greeting}>
-            <h1>Welcome back, {user?.name}! 👋</h1>
-            <p>Here's what's happening in your CRM today.</p>
+            <h1>Good to see you, {user?.name}</h1>
+            <p>Here's a quick overview of your workspace</p>
           </div>
 
           <div className={styles.stats}>
-            <StatCard icon="🎯" label="Leads" count={stats.totalLeads} />
-            <StatCard icon="✅" label="Tasks" count={stats.totalTasks} />
+            <StatCard label="Leads" count={stats.totalLeads} />
+            <StatCard label="Tasks" count={stats.totalTasks} />
             <StatCard
-              icon="👥"
               label="Users"
               count={['admin', 'manager'].includes(user?.role) ? stats.totalUsers : users.length || 1}
             />
@@ -250,7 +243,7 @@ export const Dashboard = () => {
             <div className={styles.tableHeader}>
               <h3>Recent Leads</h3>
               <button className={styles.addBtn} onClick={() => setShowAddLead(true)}>
-                + Add Lead
+                Add Lead
               </button>
             </div>
             <DataTable title="" columns={leadColumns} data={leads} onDelete={handleDeleteLead} />
@@ -258,7 +251,7 @@ export const Dashboard = () => {
             <div className={styles.tableHeader}>
               <h3>Recent Tasks</h3>
               <button className={styles.addBtn} onClick={() => setShowAddTask(true)}>
-                + Add Task
+                Add Task
               </button>
             </div>
             <DataTable title="" columns={taskColumns} data={tasks} onDelete={handleDeleteTask} />
@@ -272,16 +265,7 @@ export const Dashboard = () => {
       <Modal isOpen={showAddLead} onClose={() => setShowAddLead(false)} title="Add New Lead">
         <form onSubmit={handleCreateLead} className={styles.form}>
           {leadError && (
-            <div style={{
-              padding: '0.75rem',
-              marginBottom: '1rem',
-              backgroundColor: '#fee2e2',
-              color: '#7f1d1d',
-              borderRadius: '0.375rem',
-              fontSize: '0.875rem'
-            }}>
-              {leadError}
-            </div>
+            <div className={styles.errorMessage}>{leadError}</div>
           )}
           <div className={styles.formGroup}>
             <label className={styles.label}>Name</label>
@@ -291,6 +275,7 @@ export const Dashboard = () => {
               value={leadForm.name}
               onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })}
               disabled={isSubmitting}
+              placeholder="John Smith"
             />
           </div>
           <div className={styles.formGroup}>
@@ -301,6 +286,7 @@ export const Dashboard = () => {
               value={leadForm.email}
               onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })}
               disabled={isSubmitting}
+              placeholder="john@company.com"
             />
           </div>
           <div className={styles.formGroup}>
@@ -311,6 +297,7 @@ export const Dashboard = () => {
               value={leadForm.company}
               onChange={(e) => setLeadForm({ ...leadForm, company: e.target.value })}
               disabled={isSubmitting}
+              placeholder="Acme Corp"
             />
           </div>
           <div className={styles.formGroup}>
@@ -321,6 +308,7 @@ export const Dashboard = () => {
               value={leadForm.phone}
               onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })}
               disabled={isSubmitting}
+              placeholder="+1 555 123 4567"
             />
           </div>
           <div className={styles.formActions}>
@@ -346,16 +334,7 @@ export const Dashboard = () => {
       <Modal isOpen={showAddTask} onClose={() => setShowAddTask(false)} title="Add New Task">
         <form onSubmit={handleCreateTask} className={styles.form}>
           {taskError && (
-            <div style={{
-              padding: '0.75rem',
-              marginBottom: '1rem',
-              backgroundColor: '#fee2e2',
-              color: '#7f1d1d',
-              borderRadius: '0.375rem',
-              fontSize: '0.875rem'
-            }}>
-              {taskError}
-            </div>
+            <div className={styles.errorMessage}>{taskError}</div>
           )}
           <div className={styles.formGroup}>
             <label className={styles.label}>Title</label>
@@ -365,6 +344,7 @@ export const Dashboard = () => {
               value={taskForm.title}
               onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
               disabled={isSubmitting}
+              placeholder="Follow up with client"
             />
           </div>
           <div className={styles.formGroup}>
@@ -375,6 +355,7 @@ export const Dashboard = () => {
               onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
               rows="3"
               disabled={isSubmitting}
+              placeholder="Add any additional notes..."
             />
           </div>
           <div className={styles.formGroup}>
@@ -391,7 +372,7 @@ export const Dashboard = () => {
             </select>
           </div>
           <div className={styles.formGroup}>
-            <label className={styles.label}>Due Date (Optional)</label>
+            <label className={styles.label}>Due Date</label>
             <input
               type="date"
               className="form-input"
