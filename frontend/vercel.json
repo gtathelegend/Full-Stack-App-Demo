@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://crm-backend.onrender.com/api/:path*"
+      "destination": "https://full-stack-app-demo.onrender.com/api/:path*"
     }
   ]
 }
