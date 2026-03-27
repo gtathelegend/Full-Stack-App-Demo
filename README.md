@@ -6,10 +6,10 @@ The application includes authentication, protected routes, a dashboard, and Mong
 
 ## Repository Details
 
-- GitHub Repository: add your repository URL here
-- Frontend Live Demo: `https://full-stack-app-demo.vercel.app/`
-- Backend Live API: `https://full-stack-app-demo.onrender.com`
-- Backend Health Check: `https://full-stack-app-demo.onrender.com/health`
+- GitHub Repository: [https://github.com/gtathelegend/Full-Stack-App-Demo](https://github.com/gtathelegend/Full-Stack-App-Demo)
+- Frontend Live Demo: [https://full-stack-app-demo.vercel.app/](https://full-stack-app-demo.vercel.app/)
+- Backend Live API: [https://full-stack-app-demo.onrender.com](https://full-stack-app-demo.onrender.com)
+- Backend Health Check: [https://full-stack-app-demo.onrender.com/health](https://full-stack-app-demo.onrender.com/health)
 
 ## Assignment Objective
 
@@ -337,26 +337,20 @@ http://localhost:5173
 
 The project contains `frontend/vercel.json`, which is configured to proxy `/api` requests to:
 
-```text
-https://full-stack-app-demo.onrender.com/api
-```
+[https://full-stack-app-demo.onrender.com/api](https://full-stack-app-demo.onrender.com/api)
 
 ### Backend
 
 Confirmed backend deployment:
 
-- API Base URL: `https://full-stack-app-demo.onrender.com`
-- Health Route: `https://full-stack-app-demo.onrender.com/health`
+- API Base URL: [https://full-stack-app-demo.onrender.com](https://full-stack-app-demo.onrender.com)
+- Health Route: [https://full-stack-app-demo.onrender.com/health](https://full-stack-app-demo.onrender.com/health)
 
 ### Frontend Live Link
 
-Add your real deployed frontend URL here once deployed on Vercel or Netlify:
-
-```text
-https://full-stack-app-demo.vercel.app/
-```
+[https://full-stack-app-demo.vercel.app/](https://full-stack-app-demo.vercel.app/)
 
 ## Contact
 
-- LinkedIn: `https://www.linkedin.com/in/vedaangsharma2006/`
+- LinkedIn: [https://www.linkedin.com/in/vedaangsharma2006/](https://www.linkedin.com/in/vedaangsharma2006/)
 - Email: `vedaangsharma2006@gmail.com`
