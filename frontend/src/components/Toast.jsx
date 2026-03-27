@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import styles from './Toast.module.css'
 
 // Success icon
@@ -51,13 +51,17 @@ const icons = {
   info: InfoIcon,
 }
 
-export const Toast = ({ message, type = 'info', onClose, duration = 4000 }) => {
+export const Toast = ({ id, message, type = 'info', onClose, duration = 5000 }) => {
+  const handleClose = useCallback(() => {
+    onClose(id)
+  }, [id, onClose])
+
   useEffect(() => {
     if (duration) {
-      const timer = setTimeout(onClose, duration)
+      const timer = setTimeout(handleClose, duration)
       return () => clearTimeout(timer)
     }
-  }, [duration, onClose])
+  }, [duration, handleClose])
 
   const Icon = icons[type] || InfoIcon
 
@@ -65,7 +69,7 @@ export const Toast = ({ message, type = 'info', onClose, duration = 4000 }) => {
     <div className={`${styles.toast} ${styles[type]}`}>
       <Icon />
       <span className={styles.message}>{message}</span>
-      <button onClick={onClose} className={styles.closeBtn}>
+      <button type="button" onClick={handleClose} className={styles.closeBtn} aria-label="Close notification">
         <CloseIcon />
       </button>
     </div>
