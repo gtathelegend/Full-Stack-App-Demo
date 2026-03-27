@@ -70,3 +70,26 @@
 .logoutBtn:hover {
   background-color: #dc2626;
 }
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 var(--space-md);
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .user {
+    gap: var(--space-sm);
+  }
+
+  .userInfo {
+    display: none;
+  }
+
+  .logoutBtn {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+}

@@ -8,10 +8,14 @@ A modern full-stack CRM web application with authentication, dashboard, and data
 - ✅ Protected routes and pages
 - ✅ Login form with validation
 - ✅ Dashboard with statistics
+- ✅ **CRUD operations** - Add and delete Leads and Tasks
 - ✅ Leads, Tasks, and Users management
 - ✅ Professional UI with custom CSS
-- ✅ Responsive design
+- ✅ Responsive design (mobile-friendly)
 - ✅ Logout functionality
+- ✅ Modal dialogs for creating new items
+- ✅ Delete confirmations
+- ✅ Real-time stats updates after CRUD operations
 
 ## Tech Stack
 
@@ -128,11 +132,17 @@ After seeding, use these credentials to login:
 ### Authentication
 - `POST /api/auth/login` - Login with email and password
 
-### Dashboard (Protected Routes)
+### Dashboard - Read Operations (Protected Routes)
 - `GET /api/dashboard/leads` - Fetch leads
 - `GET /api/dashboard/tasks` - Fetch tasks
 - `GET /api/dashboard/users` - Fetch users
 - `GET /api/dashboard/stats` - Fetch statistics
+
+### Dashboard - Write Operations (Protected Routes)
+- `POST /api/dashboard/leads` - Create new lead
+- `DELETE /api/dashboard/leads/:id` - Delete lead by ID
+- `POST /api/dashboard/tasks` - Create new task
+- `DELETE /api/dashboard/tasks/:id` - Delete task by ID
 
 All protected routes require Bearer token in Authorization header:
 ```
@@ -206,12 +216,137 @@ Authorization: Bearer <token>
 - No TypeScript - vanilla JavaScript for simplicity
 - CSS modules for component styling
 
+## Deployment
+
+### Option 1: Deploy with Render (Backend) + Vercel (Frontend) - Recommended
+
+This is the easiest way to deploy for a free assessment project.
+
+#### Step 1: Deploy Backend to Render
+
+1. **Create Render Account**
+   - Go to [render.com](https://render.com) and sign up
+   - Connect your GitHub account
+
+2. **Create New Web Service**
+   - Click "New +" → "Web Service"
+   - Connect your GitHub repository
+   - Select the repository
+
+3. **Configure Render Service**
+   - **Name:** `crm-backend`
+   - **Environment:** `Node`
+   - **Build Command:** `npm install`
+   - **Start Command:** `node backend/server.js`
+   - **Root Directory:** `backend`
+
+4. **Add Environment Variables** (in Render dashboard):
+   ```
+   PORT=5000
+   MONGO_URI=<your-mongodb-atlas-uri>
+   JWT_SECRET=<your-secret-key>
+   FRONTEND_URL=<your-vercel-frontend-url> (add after frontend deployment)
+   NODE_ENV=production
+   ```
+
+5. **Deploy**
+   - Click "Create Web Service"
+   - Wait for deployment (2-3 minutes)
+   - Note the URL: `https://crm-backend.onrender.com`
+
+#### Step 2: Deploy Frontend to Vercel
+
+1. **Create Vercel Account**
+   - Go to [vercel.com](https://vercel.com) and sign up
+   - Connect your GitHub account
+
+2. **Import Project**
+   - Click "Add New" → "Project"
+   - Select your GitHub repository
+   - Vercel auto-detects it's a Monorepo
+
+3. **Configure Deployment**
+   - **Root Directory:** `frontend`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+   - **Environment Variables:** None needed (proxy in vercel.json)
+
+4. **Update vercel.json** (already provided)
+   - File: `frontend/vercel.json`
+   - Update the backend URL:
+     ```json
+     {
+       "rewrites": [
+         {
+           "source": "/api/:path*",
+           "destination": "https://crm-backend.onrender.com/api/:path*"
+         }
+       ]
+     }
+     ```
+
+5. **Deploy**
+   - Click "Deploy"
+   - Wait for deployment (1-2 minutes)
+   - Note your Vercel URL
+
+#### Step 3: Update Backend FRONTEND_URL
+
+1. Go back to Render dashboard
+2. Select the `crm-backend` service
+3. Go to "Environment" settings
+4. Update `FRONTEND_URL` to your Vercel URL (e.g., `https://crm-demo.vercel.app`)
+5. Click "Save" and service will redeploy
+
+#### Verify Deployment
+
+1. Open your Vercel frontend URL
+2. Login with `admin@demo.com` / `Admin@123`
+3. Try adding a lead or task - should sync with backend
+4. Refresh page - data should persist
+
+### Option 2: Deploy Full Stack on Railway.app
+
+Railway offers a simpler all-in-one solution:
+
+1. Go to [railway.app](https://railway.app)
+2. Create new project
+3. Connect GitHub repository
+4. Railway auto-deploys both frontend and backend
+5. Set environment variables same as above
+6. Done! (Easier than Render + Vercel)
+
+### Option 3: Deploy on Heroku (Legacy - Free tier removed)
+
+Note: Heroku free tier was discontinued. Use Render or Railway instead.
+
+## Production Checklist
+
+Before deploying, ensure:
+
+- ✅ `.env` is in `.gitignore` (don't commit sensitive data)
+- ✅ `NODE_ENV=production` in production environment
+- ✅ `FRONTEND_URL` matches your deployed frontend
+- ✅ MongoDB Atlas is accessible from Render/Railway IPs
+- ✅ CORS origin is correctly set to your frontend URL
+- ✅ Seed script has been run (or seed production DB separately)
+
+## Accessing Deployed App
+
+After deployment:
+
+1. **Frontend:** `https://your-app.vercel.app`
+2. **Backend Health Check:** `https://crm-backend.onrender.com/health`
+3. **Login:** Use `admin@demo.com` / `Admin@123` (or create new users)
+
 ## Future Enhancements
 
-- Add more CRUD operations (Create, Update, Delete)
 - Implement user roles and permissions
 - Add data pagination and filtering
 - Email verification and password reset
 - Dark mode support
 - API documentation with Swagger
 - Unit and integration tests
+- Update operations for leads and tasks
+- Bulk operations (delete multiple items)
+- Advanced filtering and search

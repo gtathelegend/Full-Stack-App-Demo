@@ -82,3 +82,91 @@ export const getStats = async (req, res) => {
     res.status(500).json({ message: 'Server error' })
   }
 }
+
+export const createLead = async (req, res) => {
+  try {
+    const { name, email, company, phone, status } = req.body
+
+    // Validation
+    if (!name || !email) {
+      return res.status(400).json({ message: 'Name and email are required' })
+    }
+
+    // Check if email already exists
+    const existingLead = await Lead.findOne({ email })
+    if (existingLead) {
+      return res.status(400).json({ message: 'Lead with this email already exists' })
+    }
+
+    const lead = await Lead.create({
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      company: company?.trim() || '',
+      phone: phone?.trim() || '',
+      status: status || 'new',
+      assignedTo: req.user.id,
+    })
+
+    res.status(201).json(lead)
+  } catch (err) {
+    console.error('Create lead error:', err)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+export const deleteLead = async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const lead = await Lead.findByIdAndDelete(id)
+    if (!lead) {
+      return res.status(404).json({ message: 'Lead not found' })
+    }
+
+    res.json({ message: 'Lead deleted successfully' })
+  } catch (err) {
+    console.error('Delete lead error:', err)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+export const createTask = async (req, res) => {
+  try {
+    const { title, description, priority, status, dueDate } = req.body
+
+    // Validation
+    if (!title) {
+      return res.status(400).json({ message: 'Title is required' })
+    }
+
+    const task = await Task.create({
+      title: title.trim(),
+      description: description?.trim() || '',
+      priority: priority || 'medium',
+      status: status || 'pending',
+      dueDate: dueDate || null,
+      assignedTo: req.user.id,
+    })
+
+    res.status(201).json(task)
+  } catch (err) {
+    console.error('Create task error:', err)
+    res.status(500).json({ message: 'Server error' })
+  }
+}
+
+export const deleteTask = async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const task = await Task.findByIdAndDelete(id)
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' })
+    }
+
+    res.json({ message: 'Task deleted successfully' })
+  } catch (err) {
+    console.error('Delete task error:', err)
+    res.status(500).json({ message: 'Server error' })
+  }
+}

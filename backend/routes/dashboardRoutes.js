@@ -5,6 +5,10 @@ import {
   getTasks,
   getUsers,
   getStats,
+  createLead,
+  deleteLead,
+  createTask,
+  deleteTask,
 } from '../controllers/dashboardController.js'
 
 const router = express.Router()
@@ -13,7 +17,13 @@ const router = express.Router()
 router.use(protect)
 
 router.get('/leads', getLeads)
+router.post('/leads', createLead)
+router.delete('/leads/:id', deleteLead)
+
 router.get('/tasks', getTasks)
+router.post('/tasks', createTask)
+router.delete('/tasks/:id', deleteTask)
+
 router.get('/users', getUsers)
 router.get('/stats', getStats)
 

@@ -49,7 +49,7 @@ const formatDate = (dateString) => {
   })
 }
 
-export const DataTable = ({ title, columns, data }) => {
+export const DataTable = ({ title, columns, data, onDelete }) => {
   return (
     <div className={styles.container}>
       <h3 className={styles.title}>{title}</h3>
@@ -60,6 +60,7 @@ export const DataTable = ({ title, columns, data }) => {
               {columns.map((col) => (
                 <th key={col.key}>{col.label}</th>
               ))}
+              {onDelete && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -93,12 +94,23 @@ export const DataTable = ({ title, columns, data }) => {
 
                     return <td key={col.key}>{content || '-'}</td>
                   })}
+                  {onDelete && (
+                    <td>
+                      <button
+                        className={styles.deleteBtn}
+                        onClick={() => onDelete(row._id)}
+                        title="Delete"
+                      >
+                        🗑️
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))
             ) : (
               <tr>
                 <td
-                  colSpan={columns.length}
+                  colSpan={columns.length + (onDelete ? 1 : 0)}
                   style={{ textAlign: 'center', padding: '32px' }}
                 >
                   No data available
