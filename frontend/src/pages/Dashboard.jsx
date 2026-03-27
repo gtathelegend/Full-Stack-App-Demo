@@ -31,17 +31,37 @@ export const Dashboard = () => {
   const fetchData = async () => {
     try {
       setLoadError(null)
-      const [statsRes, leadsRes, tasksRes, usersRes] = await Promise.all([
+      const [statsRes, leadsRes, tasksRes, usersRes] = await Promise.allSettled([
         api.get('/dashboard/stats'),
         api.get('/dashboard/leads?limit=5'),
         api.get('/dashboard/tasks?limit=5'),
         api.get('/dashboard/users?limit=5'),
       ])
 
-      setStats(statsRes.data.data)
-      setLeads(leadsRes.data.data)
-      setTasks(tasksRes.data.data)
-      setUsers(usersRes.data.data)
+      if (statsRes.status === 'fulfilled') {
+        setStats(statsRes.value.data.data)
+      }
+      if (leadsRes.status === 'fulfilled') {
+        setLeads(leadsRes.value.data.data)
+      }
+      if (tasksRes.status === 'fulfilled') {
+        setTasks(tasksRes.value.data.data)
+      }
+      if (usersRes.status === 'fulfilled') {
+        setUsers(usersRes.value.data.data)
+      } else if (usersRes.status === 'rejected' && usersRes.reason.response?.status === 403) {
+        // User doesn't have permission to view users list (non-admin/manager)
+        setUsers([])
+      } else if (usersRes.status === 'rejected') {
+        console.warn('Failed to fetch users:', usersRes.reason)
+      }
+
+      // Check if any critical requests failed
+      if (statsRes.status === 'rejected' || leadsRes.status === 'rejected' || tasksRes.status === 'rejected') {
+        const failedRequest = [statsRes, leadsRes, tasksRes].find(r => r.status === 'rejected')
+        const errorMsg = failedRequest.reason.response?.data?.message || 'Failed to fetch data'
+        setLoadError(errorMsg)
+      }
     } catch (err) {
       const errorMsg = err.response?.data?.message || 'Failed to fetch data'
       setLoadError(errorMsg)
@@ -219,7 +239,11 @@ export const Dashboard = () => {
           <div className={styles.stats}>
             <StatCard icon="🎯" label="Leads" count={stats.totalLeads} />
             <StatCard icon="✅" label="Tasks" count={stats.totalTasks} />
-            <StatCard icon="👥" label="Users" count={stats.totalUsers} />
+            <StatCard
+              icon="👥"
+              label="Users"
+              count={['admin', 'manager'].includes(user?.role) ? stats.totalUsers : users.length || 1}
+            />
           </div>
 
           <div className={styles.tables}>

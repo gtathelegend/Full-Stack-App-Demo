@@ -114,12 +114,7 @@
   line-height: 1.6;
 }
 
-.hint strong {
-  color: var(--color-primary);
-  font-weight: 600;
-}
-
-.signupLink {
+.loginLink {
   background: none;
   border: none;
   color: var(--color-primary);
@@ -131,6 +126,6 @@
   transition: color 0.2s;
 }
 
-.signupLink:hover {
+.loginLink:hover {
   color: var(--color-primary-hover);
 }

@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password })
-      const { token: newToken, user: newUser } = response.data
+      const { token: newToken, user: newUser } = response.data.data
 
       localStorage.setItem('token', newToken)
       localStorage.setItem('user', JSON.stringify(newUser))
@@ -59,6 +59,26 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const register = async (name, email, password) => {
+    try {
+      const response = await api.post('/auth/register', { name, email, password })
+      const { token: newToken, user: newUser } = response.data.data
+
+      localStorage.setItem('token', newToken)
+      localStorage.setItem('user', JSON.stringify(newUser))
+
+      setToken(newToken)
+      setUser(newUser)
+
+      return { success: true }
+    } catch (err) {
+      return {
+        success: false,
+        error: err.response?.data?.message || 'Registration failed',
+      }
+    }
+  }
+
   const logout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -67,7 +87,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )
