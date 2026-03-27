@@ -4,7 +4,10 @@ export const protect = (req, res, next) => {
   const authHeader = req.headers.authorization
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'No token provided' })
+    return res.status(401).json({
+      success: false,
+      message: 'No token provided',
+    })
   }
 
   const token = authHeader.split(' ')[1]
@@ -14,6 +17,31 @@ export const protect = (req, res, next) => {
     req.user = decoded
     next()
   } catch (err) {
-    return res.status(401).json({ message: 'Token invalid or expired' })
+    return res.status(401).json({
+      success: false,
+      message: 'Token invalid or expired',
+    })
   }
+}
+
+/**
+ * Role-based authorization middleware
+ * Usage: authorize('admin', 'manager') - allows admin and manager roles
+ */
+export const authorize = (...allowedRoles) => (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Not authenticated',
+    })
+  }
+
+  if (!allowedRoles.includes(req.user.role)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Insufficient permissions',
+    })
+  }
+
+  next()
 }

@@ -5,25 +5,32 @@ import { StatCard } from '../components/StatCard'
 import { DataTable } from '../components/DataTable'
 import { Modal } from '../components/Modal'
 import { useAuth } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
 import api from '../api/axios'
 import styles from './Dashboard.module.css'
 
 export const Dashboard = () => {
   const { user } = useAuth()
+  const { showToast } = useToast()
   const [stats, setStats] = useState({ totalLeads: 0, totalTasks: 0, totalUsers: 0 })
   const [leads, setLeads] = useState([])
   const [tasks, setTasks] = useState([])
   const [users, setUsers] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
 
   // Modal states
   const [showAddLead, setShowAddLead] = useState(false)
   const [showAddTask, setShowAddTask] = useState(false)
   const [leadForm, setLeadForm] = useState({ name: '', email: '', company: '', phone: '' })
-  const [taskForm, setTaskForm] = useState({ title: '', description: '', priority: 'medium' })
+  const [leadError, setLeadError] = useState('')
+  const [taskForm, setTaskForm] = useState({ title: '', description: '', priority: 'medium', dueDate: '' })
+  const [taskError, setTaskError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const fetchData = async () => {
     try {
+      setLoadError(null)
       const [statsRes, leadsRes, tasksRes, usersRes] = await Promise.all([
         api.get('/dashboard/stats'),
         api.get('/dashboard/leads?limit=5'),
@@ -31,11 +38,13 @@ export const Dashboard = () => {
         api.get('/dashboard/users?limit=5'),
       ])
 
-      setStats(statsRes.data)
+      setStats(statsRes.data.data)
       setLeads(leadsRes.data.data)
       setTasks(tasksRes.data.data)
       setUsers(usersRes.data.data)
     } catch (err) {
+      const errorMsg = err.response?.data?.message || 'Failed to fetch data'
+      setLoadError(errorMsg)
       console.error('Failed to fetch data:', err)
     } finally {
       setIsLoading(false)
@@ -46,16 +55,42 @@ export const Dashboard = () => {
     fetchData()
   }, [])
 
+  const validateLeadForm = () => {
+    if (!leadForm.name.trim()) {
+      setLeadError('Name is required')
+      return false
+    }
+    if (!leadForm.email.trim()) {
+      setLeadError('Email is required')
+      return false
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(leadForm.email)) {
+      setLeadError('Invalid email format')
+      return false
+    }
+    setLeadError('')
+    return true
+  }
+
   const handleCreateLead = async (e) => {
     e.preventDefault()
+    if (!validateLeadForm()) return
+
+    setIsSubmitting(true)
     try {
       const res = await api.post('/dashboard/leads', leadForm)
-      setLeads([res.data, ...leads])
+      setLeads([res.data.data, ...leads])
       setStats({ ...stats, totalLeads: stats.totalLeads + 1 })
       setLeadForm({ name: '', email: '', company: '', phone: '' })
       setShowAddLead(false)
+      showToast('Lead created successfully', 'success')
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to create lead')
+      const errorMsg = err.response?.data?.message || 'Failed to create lead'
+      setLeadError(errorMsg)
+      showToast(errorMsg, 'error')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -65,21 +100,40 @@ export const Dashboard = () => {
       await api.delete(`/dashboard/leads/${id}`)
       setLeads(leads.filter((l) => l._id !== id))
       setStats({ ...stats, totalLeads: stats.totalLeads - 1 })
+      showToast('Lead deleted successfully', 'success')
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete lead')
+      const errorMsg = err.response?.data?.message || 'Failed to delete lead'
+      showToast(errorMsg, 'error')
     }
+  }
+
+  const validateTaskForm = () => {
+    if (!taskForm.title.trim()) {
+      setTaskError('Title is required')
+      return false
+    }
+    setTaskError('')
+    return true
   }
 
   const handleCreateTask = async (e) => {
     e.preventDefault()
+    if (!validateTaskForm()) return
+
+    setIsSubmitting(true)
     try {
       const res = await api.post('/dashboard/tasks', taskForm)
-      setTasks([res.data, ...tasks])
+      setTasks([res.data.data, ...tasks])
       setStats({ ...stats, totalTasks: stats.totalTasks + 1 })
-      setTaskForm({ title: '', description: '', priority: 'medium' })
+      setTaskForm({ title: '', description: '', priority: 'medium', dueDate: '' })
       setShowAddTask(false)
+      showToast('Task created successfully', 'success')
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to create task')
+      const errorMsg = err.response?.data?.message || 'Failed to create task'
+      setTaskError(errorMsg)
+      showToast(errorMsg, 'error')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -89,8 +143,10 @@ export const Dashboard = () => {
       await api.delete(`/dashboard/tasks/${id}`)
       setTasks(tasks.filter((t) => t._id !== id))
       setStats({ ...stats, totalTasks: stats.totalTasks - 1 })
+      showToast('Task deleted successfully', 'success')
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete task')
+      const errorMsg = err.response?.data?.message || 'Failed to delete task'
+      showToast(errorMsg, 'error')
     }
   }
 
@@ -98,6 +154,30 @@ export const Dashboard = () => {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
         <div className="spinner"></div>
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className={styles.layout}>
+        <Sidebar />
+        <div className={styles.main}>
+          <Navbar title="Dashboard" />
+          <div className={styles.content}>
+            <div style={{ textAlign: 'center', padding: '3rem' }}>
+              <h2>Error Loading Data</h2>
+              <p style={{ color: '#666', marginBottom: '1.5rem' }}>{loadError}</p>
+              <button
+                className={styles.submitBtn}
+                onClick={fetchData}
+                style={{ cursor: 'pointer' }}
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -167,6 +247,18 @@ export const Dashboard = () => {
       {/* Add Lead Modal */}
       <Modal isOpen={showAddLead} onClose={() => setShowAddLead(false)} title="Add New Lead">
         <form onSubmit={handleCreateLead} className={styles.form}>
+          {leadError && (
+            <div style={{
+              padding: '0.75rem',
+              marginBottom: '1rem',
+              backgroundColor: '#fee2e2',
+              color: '#7f1d1d',
+              borderRadius: '0.375rem',
+              fontSize: '0.875rem'
+            }}>
+              {leadError}
+            </div>
+          )}
           <div className={styles.formGroup}>
             <label className={styles.label}>Name</label>
             <input
@@ -174,7 +266,7 @@ export const Dashboard = () => {
               className="form-input"
               value={leadForm.name}
               onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })}
-              required
+              disabled={isSubmitting}
             />
           </div>
           <div className={styles.formGroup}>
@@ -184,7 +276,7 @@ export const Dashboard = () => {
               className="form-input"
               value={leadForm.email}
               onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })}
-              required
+              disabled={isSubmitting}
             />
           </div>
           <div className={styles.formGroup}>
@@ -194,6 +286,7 @@ export const Dashboard = () => {
               className="form-input"
               value={leadForm.company}
               onChange={(e) => setLeadForm({ ...leadForm, company: e.target.value })}
+              disabled={isSubmitting}
             />
           </div>
           <div className={styles.formGroup}>
@@ -203,14 +296,23 @@ export const Dashboard = () => {
               className="form-input"
               value={leadForm.phone}
               onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })}
+              disabled={isSubmitting}
             />
           </div>
           <div className={styles.formActions}>
-            <button type="button" className={styles.cancelBtn} onClick={() => setShowAddLead(false)}>
+            <button
+              type="button"
+              className={styles.cancelBtn}
+              onClick={() => {
+                setShowAddLead(false)
+                setLeadError('')
+              }}
+              disabled={isSubmitting}
+            >
               Cancel
             </button>
-            <button type="submit" className={styles.submitBtn}>
-              Create Lead
+            <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+              {isSubmitting ? 'Creating...' : 'Create Lead'}
             </button>
           </div>
         </form>
@@ -219,6 +321,18 @@ export const Dashboard = () => {
       {/* Add Task Modal */}
       <Modal isOpen={showAddTask} onClose={() => setShowAddTask(false)} title="Add New Task">
         <form onSubmit={handleCreateTask} className={styles.form}>
+          {taskError && (
+            <div style={{
+              padding: '0.75rem',
+              marginBottom: '1rem',
+              backgroundColor: '#fee2e2',
+              color: '#7f1d1d',
+              borderRadius: '0.375rem',
+              fontSize: '0.875rem'
+            }}>
+              {taskError}
+            </div>
+          )}
           <div className={styles.formGroup}>
             <label className={styles.label}>Title</label>
             <input
@@ -226,7 +340,7 @@ export const Dashboard = () => {
               className="form-input"
               value={taskForm.title}
               onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
-              required
+              disabled={isSubmitting}
             />
           </div>
           <div className={styles.formGroup}>
@@ -236,6 +350,7 @@ export const Dashboard = () => {
               value={taskForm.description}
               onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
               rows="3"
+              disabled={isSubmitting}
             />
           </div>
           <div className={styles.formGroup}>
@@ -244,18 +359,37 @@ export const Dashboard = () => {
               className="form-input"
               value={taskForm.priority}
               onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value })}
+              disabled={isSubmitting}
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
             </select>
           </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Due Date (Optional)</label>
+            <input
+              type="date"
+              className="form-input"
+              value={taskForm.dueDate}
+              onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })}
+              disabled={isSubmitting}
+            />
+          </div>
           <div className={styles.formActions}>
-            <button type="button" className={styles.cancelBtn} onClick={() => setShowAddTask(false)}>
+            <button
+              type="button"
+              className={styles.cancelBtn}
+              onClick={() => {
+                setShowAddTask(false)
+                setTaskError('')
+              }}
+              disabled={isSubmitting}
+            >
               Cancel
             </button>
-            <button type="submit" className={styles.submitBtn}>
-              Create Task
+            <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+              {isSubmitting ? 'Creating...' : 'Create Task'}
             </button>
           </div>
         </form>
